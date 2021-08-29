@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+# Fail fast
+set -uo pipefail
+# set -x (Debugging)
+
+disp () (
+    echo "---->  $*"
+)
+
+status_code () (
+    curl -sIX GET -o /dev/null -w '%{http_code}' $1
+)
+
+dl_links='direct_link.txt'
+disp "Running python script..."
+pip3 install . > /dev/null
+$(which python3) pixel_dl.py $*
+if ! [ -f $dl_links ] ; then
+    exit 1
+fi
+LINES=$(cat $dl_links)
+rm $dl_links
+mkdir -p downloads && cd downloads
+for LINE in $LINES
+do
+    url=$(echo $LINE | xargs) # strip whitespace
+
+    if [ $(status_code $url) == 200 ] ; then
+        curl $url -O
+    else
+        disp "Skipping [ $url ] due to Invalid Status Code !"
+    fi
+done
+echo 'DONE, Roms downloaded at "/downloads"'
+
