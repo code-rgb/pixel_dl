@@ -14,7 +14,7 @@ status_code () (
 
 dl_links='direct_link.txt'
 disp "Running python script..."
-pip3 install . > /dev/null
+$(which pip3) install . &> /dev/null
 $(which python3) pixel_dl.py $*
 if ! [ -f $dl_links ] ; then
     exit 1
